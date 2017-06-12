@@ -135,7 +135,7 @@ $white▐█$purpple   WPA Key:$yellow $wpakey$nocolour"
                 killall wpa_supplicant dhclient 2>/dev/null
                 echo -e "$white▐█$purpple   Restarting Newtork Manager$nocolour"
                 systemctl restart network-manager
-                echo -e "$white▐█$purpple   Exporting profile for$yellow $essid$orange to Network Manager$nocolour"
+                echo -e "$white▐█$purpple   Exporting profile for$yellow $essid$purpple to Network Manager$nocolour"
                 nmcli con add con-name "$essid" ifname "$interface" type wifi ssid "$essid" 
                 nmcli con modify "$essid" wifi-sec.key-mgmt wpa-psk 
                 nmcli con modify "$essid" wifi-sec.psk "$wpakey" 
