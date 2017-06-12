@@ -1,5 +1,5 @@
 #! /bin/bash
-version=0.1
+version=0.2
 
 # PBC.sh is a bash script that acts like an emulator of WPS button, usimg wpa_supplicant to perform a WPS PBC (Push button Configuration) connexion.
 # Copyright (C) 2017 kcdtv @ www.wifi-libre.com
@@ -47,7 +47,7 @@ echo -e "$white
                             ▐█ ▄█▐█ ▀█▪▐█ ▌▪
                              ██▀·▐█▀▀█▄██ ▄▄
                             ▐█▪·•██▄▪▐█▐███▌ $nocolour.sh$white
-                            .▀   ·▀▀▀▀ ·▀▀▀  
+                            .▀   ·▀▀▀▀ ·▀▀▀ $nocolour version: $version
 
                     Virtual$purpple WPS PBC$white button for$purpple GNU-Linux$nocolour
 
@@ -59,28 +59,28 @@ Copyright (C) 2017 kcdtv @ www.wifi-libre.com (see the GPLv3 license provided)
 # Script
 echo -e "$white▐█$purpple   Privileges check...$nocolour"  
 whoami | grep root || { echo -e "$red▐█   Error$nocolour - You need root privileges. Run the script again with$white sudo$nocolour or$white su$nocolour. 
-$red▐█   Exit.$nocolour"; exit 1; }  
+$red▐█   Exit.$nocolour"; error=0;  exit 1; }  
 echo -e "$white▐█$purpple   Interface(s) check...$nocolour" 
 iwconfig | tee /tmp/interfaces.txt
-    if [ $(wc -w < /tmp/interfaces.txt) == 0 ]; 
+    if [ "$(wc -w < /tmp/interfaces.txt)" == 0 ]; 
       then
         echo -e "$red▐█   Error$nocolour - No wireless interface detected.
 $red▐█   Exit.$nocolour"
         exit 1   
-    elif [ $(grep IEEE /tmp/interfaces.txt | wc -l) == 1 ];
+    elif [ "$(grep -c IEEE /tmp/interfaces.txt)" == 1 ];
       then
 interface=$(head -n 1 /tmp/interfaces.txt | awk '{ print $1 }')  
         echo -e "$white▐█$purpple   One wifi interface has been detected and automaticaly selected: $green$interface$nocolour"
     else
-        while [ -z $interface ]; 
+        while [ -z "$interface" ]; 
           do
             echo -e "$white▐█$purpple   Several interfaces are available. Make your choice: $nocolour"
             echo -e "   num Interface $blue"
             grep IEEE /tmp/interfaces.txt | awk '{ print $1 }' | nl
             echo -e "$white▐█$purpple   Your choice:$yellow"
-            read -n 1 -ep "     " num
+            read -r -n 1 -ep "     " num
             interface=$(grep IEEE /tmp/interfaces.txt | awk '{ print $1 }' | sed "$num!d" 2>/dev/null )   
-                if [ -z $interface ]; 
+                if [ -z "$interface" ]; 
                   then
                     echo -e "$red▐█   Error$nocolour - There is no interface associated with the entered number ($num).
 
@@ -98,9 +98,9 @@ systemctl stop network-manager
 echo -e "$white▐█$purpple   Killing conflictual process$nocolour"
 killall wpa_supplicant dhclient 2>/dev/null
 echo -e "$white▐█$purpple   Managed mode control$nocolour"
-ip link set $interface down
-iwconfig $interface mode managed
-ip link set $interface up
+ip link set "$interface" down
+iwconfig "$interface" mode managed
+ip link set "$interface" up
 echo -e "$white▐█$purpple   Soft block control$nocolour"
 rfkill unblock wifi
 echo -e "$white▐█$purpple   Creation of wpa_supplicant configuration file$nocolour" 
@@ -108,7 +108,7 @@ echo "ctrl_interface=/var/run/wpa_supplicant
 ctrl_interface_group=root
 update_config=1" >> /tmp/PBC.conf
 echo -e "$white▐█$purpple   Launching wpa-supplicant$nocolour"
-wpa_supplicant -c /tmp/PBC.conf -i $interface -B 
+wpa_supplicant -c /tmp/PBC.conf -i "$interface" -B 
 echo -e "$white   
                               ▄▄▄·▄▄▄▄·  ▄▄· 
                             ▐█ ▄█▐█ ▀█▪▐█ ▌▪
@@ -116,13 +116,13 @@ echo -e "$white
                             ▐█▪·•██▄▪▐█▐███▌ 
 $green             Pushing virtual$white.▀   ·▀▀▀▀ ·▀▀▀$green button !!!$nocolour  
 "
-wpa_cli -i $interface wps_pbc any
+wpa_cli -i "$interface" wps_pbc any
 krono=120
     while [ $krono -gt 0 ]; 
       do
-        krono=$(($krono - 1))
+        krono=$((krono - 1))
         echo -ne "$green▐█$purpple   You have $yellow$krono$white seconds left to push the button on your acess point$nocolour\033[0K\r"
-            if [[ -n $( grep "network=" /tmp/PBC.conf ) ]];
+            if ( grep -q "network=" /tmp/PBC.conf ) ;
               then
                 echo -e "
 
@@ -136,13 +136,13 @@ $white▐█$purpple   WPA Key:$yellow $wpakey$nocolour"
                 echo -e "$white▐█$purpple   Restarting Newtork Manager$nocolour"
                 systemctl restart network-manager
                 echo -e "$white▐█$purpple   Exporting profile for$yellow $essid$orange to Network Manager$nocolour"
-                nmcli con add con-name $essid ifname $interface type wifi ssid $essid 
-                nmcli con modify $essid wifi-sec.key-mgmt wpa-psk 
-                nmcli con modify $essid wifi-sec.psk $wpakey 
+                nmcli con add con-name "$essid" ifname "$interface" type wifi ssid "$essid" 
+                nmcli con modify "$essid" wifi-sec.key-mgmt wpa-psk 
+                nmcli con modify "$essid" wifi-sec.psk "$wpakey" 
                 echo -e "$white▐█$purpple   Cleaning temporary files"
                 rm -r /tmp/interfaces.txt /tmp/PBC.conf  
                 echo -e "$white▐█$purpple   Connecting to the network with Network Manager$nocolour"
-                nmcli connection up $essid || { echo -e "
+                nmcli connection up "$essid" || { echo -e "
 
 $red▐█   Error$nocolour -$yellow Conexion failure.$red Exit.$nocolour
    
