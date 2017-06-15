@@ -1,5 +1,5 @@
 #! /bin/bash
-version=0.2
+version=0.3
 
 # PBC.sh is a bash script that acts like an emulator of WPS button, usimg wpa_supplicant to perform a WPS PBC (Push button Configuration) connexion.
 # Copyright (C) 2017 kcdtv @ www.wifi-libre.com
@@ -33,6 +33,9 @@ $orange▐█   Killing remaining process$nocolour"
     systemctl restart network-manager
     echo -e "$orange▐█   Cleaning up$nocolour"
     rm -r /tmp/interfaces.txt /tmp/PBC.conf &>/dev/null
+elif [ "$error" == 2 ] ;
+  then  
+    rm -r /tmp/interfaces.txt
 fi
 echo -e "$nocolour
  To launch the script again just press [up] than [ENTER] ;)
@@ -66,6 +69,7 @@ iwconfig | tee /tmp/interfaces.txt
       then
         echo -e "$red▐█   Error$nocolour - No wireless interface detected.
 $red▐█   Exit.$nocolour"
+        error=2
         exit 1   
     elif [ "$(grep -c IEEE /tmp/interfaces.txt)" == 1 ];
       then
@@ -136,7 +140,7 @@ $white▐█$purpple   WPA Key:$yellow $wpakey$nocolour"
                 echo -e "$white▐█$purpple   Restarting Newtork Manager$nocolour"
                 systemctl restart network-manager
                 echo -e "$white▐█$purpple   Exporting profile for$yellow $essid$purpple to Network Manager$nocolour"
-                nmcli con add con-name "$essid" ifname "$interface" type wifi ssid "$essid" 
+                nmcli con add con-name "$essid" ifname "*" type wifi ssid "$essid"
                 nmcli con modify "$essid" wifi-sec.key-mgmt wpa-psk 
                 nmcli con modify "$essid" wifi-sec.psk "$wpakey" 
                 echo -e "$white▐█$purpple   Cleaning temporary files"
