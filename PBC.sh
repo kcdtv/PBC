@@ -1,5 +1,5 @@
 #! /bin/bash
-version=0.3
+version=0.4
 
 # PBC.sh is a bash script that acts like an emulator of WPS button, usimg wpa_supplicant to perform a WPS PBC (Push button Configuration) connexion.
 # Copyright (C) 2017 kcdtv @ www.wifi-libre.com
@@ -101,12 +101,12 @@ echo -e "$white▐█$purpple   Shutting down network manager$nocolour (wifi con
 systemctl stop network-manager
 echo -e "$white▐█$purpple   Killing conflictual process$nocolour"
 killall wpa_supplicant dhclient 2>/dev/null
+echo -e "$white▐█$purpple   Soft block control$nocolour"
+rfkill unblock wifi
 echo -e "$white▐█$purpple   Managed mode control$nocolour"
 ip link set "$interface" down
 iwconfig "$interface" mode managed
 ip link set "$interface" up
-echo -e "$white▐█$purpple   Soft block control$nocolour"
-rfkill unblock wifi
 echo -e "$white▐█$purpple   Creation of wpa_supplicant configuration file$nocolour" 
 echo "ctrl_interface=/var/run/wpa_supplicant
 ctrl_interface_group=root
