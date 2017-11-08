@@ -25,7 +25,7 @@ cd PBC
 sudo bash PBC.sh
 ```
 
-# **What does it does?**     
+# **What does it do?**     
  - When you execute **PBC.sh**; a WPS conexion request is sent in **P**ush **B**utton **C**onfiguration mode using **wpa-cli**       
 [![image2]]   
  - You just have to press the PBC button from your **A**ccess **P**oint in order to connect to it          
